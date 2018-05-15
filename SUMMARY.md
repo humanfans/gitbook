@@ -1,7 +1,7 @@
 # Summary
 
 * [Introduction](README.md)
-* [操作系统](OS/操作系统.md)
+* [操作系统](OS/os.md)
     * [Linux](OS/linux/linux.md)
     * [windows](OS/win/windows.md)
     * [Unix](OS/unix/unix.md)
