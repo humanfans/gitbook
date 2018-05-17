@@ -16,6 +16,7 @@
         * [redis](db/redis/redis.md)
     * [监控系统](monitor/monitor.md)
         * [zabbix](monitor/zabbix/zabbix.md)
+            * [python实现zabbix告警推送钉钉](monitor/zabbix/python实现zabbix告警推送钉钉.md)
         * [prometheus](monitor/prometheus/prometheus.md)
         * [ELK](monitor/elk/elk.md)
     * [常用工具](tools/tools.md)
