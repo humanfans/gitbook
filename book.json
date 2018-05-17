@@ -8,7 +8,7 @@
     "root": ".",
     "links": {
         "sidebar": {
-            "Home": "http://h.pytoday.org"
+            "Home": "huangwj.app"
         }
     },
     "plugins": [
