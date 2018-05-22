@@ -19,13 +19,12 @@
             * [python实现zabbix告警推送钉钉](monitor/zabbix/python实现zabbix告警推送钉钉.md)
         * [prometheus](monitor/prometheus/prometheus.md)
         * [ELK](monitor/elk/elk.md)
-    * web服务器
-        * nginx
-            * nginx学习笔记
+    * [web服务器](web/web.md)
+        * [nginx](web/nginx/nginx.md)
+            * [nginx学习笔记](web/nginx/notes/notes.md)
                 * [nginx](web/nginx/notes/nginx基础.md)
     * [常用工具](tools/tools.md)
         * [gitlab](tools/gitlab/gitlab.md)
         * [ansible](tools/ansible/ansible.md)
 * 瞎扯淡
-    * 
 
