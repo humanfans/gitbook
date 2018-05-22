@@ -179,5 +179,55 @@ reeor_log logs/error.log error;
 
 日志等级高于error的日志会被记录在logs/error.log下
 
+### include
+
+用于将其他的nginx配置或者第三方模块的配置引用到当前的主配置文件中。语法为：
+
+```shell
+include file;
+```
+
+**注意：** 新引用进来的文件同样要求运行nginx进程的用户对其具有写权限，并且符合nginx配置文件规定的相关语法和结构  
+
+该配置命令可以放在配置文件的任意地方
+
+### accept_mutex 网络连接序列化
+
+惊群问题：当某一时刻只有一个网络连接到来时，多个睡眠进程会被同时叫醒，但只有一个进程可获得连接，如果每次还行的进程数目太多，会影响一部分系统性能。  
+
+为了解决这样的问题，nginx配置中包含了accept_mutex，当accept_mutex开启时，将对多个nginx进程接收连接进行序列化，防止多个进程对连接的争抢，其语法结构为：
+
+```shell
+accept_mutex on | off ; 
+```
+
+该指令默认开启，只能在events块中进行配置
+
+### multi_accept 多网络连接
+
+nginx服务器的worker process是否同时接收多个新到达的网络连接，由multi_accept控制：
+
+```shell
+multi_accept on | off ;
+```
+
+### use 事件驱动模型
+
+nginx服务器提供多宗事件驱动模型来处理网络消息，指令use:
+
+```shell
+use method;
+```
+
+其中，method可选择的内容：select、poll、kqueue、epoll、rtsig、/dev/poll以及eventport
+
+**注意：** 可以在编译是使用`--with-select_module`和`--without-select_module`设置是否强制编译select模块到nginx内核；使用`--with-poll_module`和`--without-poll_module`设置是否强制编译poll模块到nginx内核。  
+
+此指令只能在events块中进行配置。
+
+
+
+
+
 
 

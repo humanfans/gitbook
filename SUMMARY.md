@@ -26,5 +26,6 @@
     * [常用工具](tools/tools.md)
         * [gitlab](tools/gitlab/gitlab.md)
         * [ansible](tools/ansible/ansible.md)
-* 瞎扯淡
+* [瞎扯淡](chedan/chedan.md)
+    * [自己的小目标](chedan/goal.md)
 
