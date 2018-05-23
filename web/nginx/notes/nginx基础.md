@@ -131,7 +131,7 @@ http {
 }
 ```
 
-### user
+### user 启动用户
 
 ```shell
 user user [group];
@@ -146,7 +146,7 @@ user user [group];
 user nobody nobody;
 ```
 
-### worker process
+### worker process  进程数
 
 nginx服务器实现并发处理服务的关键所在，理论上worker process越大支持的并发越大，但实际受限于服务器本身资源
 
@@ -157,13 +157,13 @@ worker process number|auto;
 * number：制定nginx进程最多可以产生多少个worker process
 * auto：nginx自动检测生成相应的worker process（一般等同于CPU线程数量）
 
-### pid
+### pid 进程ID
 
 主进程号，编译安装默认在logs目录下  
 
 尽量写绝对路径，如：/opt/nginx/logs/nginx.pid
 
-### error_log
+### error_log 错误日志
 
 全局块、HTTP块和server块都可以对你滚下服务器的日志进行相关配置，语法结构如下：
 
@@ -179,7 +179,7 @@ reeor_log logs/error.log error;
 
 日志等级高于error的日志会被记录在logs/error.log下
 
-### include
+### include 包含配置文件
 
 用于将其他的nginx配置或者第三方模块的配置引用到当前的主配置文件中。语法为：
 
@@ -224,6 +224,117 @@ use method;
 **注意：** 可以在编译是使用`--with-select_module`和`--without-select_module`设置是否强制编译select模块到nginx内核；使用`--with-poll_module`和`--without-poll_module`设置是否强制编译poll模块到nginx内核。  
 
 此指令只能在events块中进行配置。
+
+### work_connections 最大连接数
+
+每一个worker process同时开启的最大连接数
+
+```shell
+worker_connections number;
+```
+
+默认值512
+
+**注意：这里的number不仅仅包括和前端用户简历的连接数，而是包括所有可能的连接数。另外，number值不能大于操作系统支持打开的最大我呢见句柄数量**
+
+只能在events块中进行配置
+
+### MIME-Type 文件类型
+
+MIME-Type是网络子u按的媒体类型，包括HTML，XML，GIF，及Flash等文本、媒体资源
+
+```
+include mine.types;
+default_type application/octet-stram;
+```
+
+```shell
+[root@test nginx]# cat conf/mime.types
+
+types {
+    text/html                                        html htm shtml;
+...
+
+    text/mathml                                      mml;
+...
+
+    image/png                                        png;
+...
+    image/x-ms-bmp                                   bmp;
+
+    application/font-woff                            woff;
+    application/java-archive                         jar war ear;
+...
+    application/vnd.openxmlformats-officedocument.presentationml.presentation
+                                                     pptx;
+    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+                                                     xlsx;
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document
+                                                     docx;
+...
+
+    application/octet-stream                         bin exe dll;
+    application/octet-stream                         deb;
+...
+
+    audio/midi                                       mid midi kar;
+    audio/mpeg                                       mp3;
+...
+    video/3gpp                                       3gpp 3gp;
+    video/mp2t                                       ts;
+    video/mp4                                        mp4;
+...
+}
+```
+
+type中包含了浏览器能够识别的MIME类型以及对应相应类型的文件啊后缀名，由于mime——types文件是猪配置文件应用的第三方文件  
+
+```shell
+default——type mime-type;
+```
+
+### access_log 服务日志
+
+```shell
+access_log path [format [buffer=size]]
+```
+
+* path: 日志存放的路径和名称
+* format： 可选项，自定义服务日志的格式字符串
+* size： 配置临时存放日志的内存缓存区大小
+
+access_log可以在HTTP、server、或者location块进行设置，默认的配置为：
+
+```shell
+access_log logs/access.log combined;
+```
+
+combined 为log_format指令默认定义的日志格式字符串的名称
+
+#### 取消日志
+
+```shell
+access_log off;	
+```
+
+### log_format 服务日志格式
+
+只能在HTTP块中进行配置
+
+* name 格式民称，默认为combined
+* string 服务日志的格式字符串，可以使用nginx预设的变量获取相关内容，变量的名称使用双引号，string整体使用单引号括起来。
+
+```shell
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+```
+
+###  sendfile
+
+
+
+
 
 
 
