@@ -330,7 +330,70 @@ access_log off;
                       '"$http_user_agent" "$http_x_forwarded_for"';
 ```
 
-###  sendfile
+###  sendfile  文件传输模式
+
+sendfile可以放nginx在传输文件是直接在磁盘和TCP socket之间传输数据，如果这个参数不开启，会先在用户空间(nginx进程空间)申请一个buffer，用read函数把数据从磁盘读到cache，再从cache读取到用户空间的buffer，再用writer函数把数据从用户空间的buffer写入到内核的buffer，最后到TCP socket，开启这个参数可以让数据不用经过用户buffer。
+
+```shell
+sendfile on | off ;
+sendfile_max_chunk size;
+```
+
+* sendfile默认为off，可以在HTTP、server、location中进行配置
+
+* sendfile_max_chunk默认值为0，可以在HTTP、server、location中配置
+
+  size值如果大于0，则nginx每个worker process每次调用sendfile传输的数据量最大不能超过这个值；size值设置为0，则无限制。
+
+### keepalive_timeout 连接超时时间
+
+与用户简历会话连接后，nginx服务器可以保持的会话时长，可以配置在server和location中
+
+```shell
+keepalive_timeout timeout [header_timeout];
+```
+
+* timeout 服务器端对连接的保持时间，默认75S
+* header_timeout，可选项，在应答报文头部的keep-alive域设置超时时间：“Keep-Alive：timeout=header_timeout”，保温中的指令可以被Mozilla或者konqueror识别
+
+```shell
+# 在服务端保持连接的时间设置为120s，发送给用户端的应答报文头部中Keep-Alive域的超时时间设置为100s
+keepalive_timeout 120s 100s;
+```
+
+### keepalive_requests 单连接请求数上限
+
+nginx服务端与用户建立会话连接后，用户端通过此连接发送请求。keepalive用于限制用户通过一个连接向nginx服务器发送请求的次数，默认为100
+
+```shell
+keepalive_requests number;
+```
+
+### listen 网络监听
+
+#### 三种监听模式
+
+##### 监听地址
+
+```shell
+listen address [:port] [default_server] [setfib=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [deferred] [accepy_filter=filter] [bind] [ssl];
+```
+
+##### 监听端口
+
+```shell
+listen port [default_server] [setfib=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [ssl];
+```
+
+##### Unix domain socket
+
+```shell
+listen unix:path [default_server] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ssl];
+```
+
+#### 参数
+
+
 
 
 
