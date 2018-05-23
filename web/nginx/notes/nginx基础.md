@@ -393,11 +393,7 @@ listen unix:path [default_server] [backlog=number] [rcvbuf=size] [sndbuf=size] [
 
 #### 参数
 
-111
-
-222
-
-
+未完成
 
 
 
