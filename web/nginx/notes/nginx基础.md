@@ -1,4 +1,4 @@
-# nginx
+# nginx基础
 
 nginx官网：http://www.nginx.org  
 nginx wiki：https://www.nginx.com/resources/wiki/
@@ -393,11 +393,202 @@ listen unix:path [default_server] [backlog=number] [rcvbuf=size] [sndbuf=size] [
 
 #### 参数
 
-未完成1
+* setfib=number，监听socket关联路由表，目前只对FreeBSD起作用
+* backlog=number，设置监听函数listen()最多允许多少网络连接同时处于挂起状态，在FreeBSD中默认为-1，其他平台默认511（比默认的512work_connections少1个）
+* rcvbuf=size，设置监听socket接收缓存区大小
+* sndbuf=size，设置监听socket发送缓存区大小
+* deferred，标识符，将accept()设置为deferred模式
+* accept_filter=filter，设置accept()设置为deferred模式
+* bind，标识符，使用独立的bind()处理address:port；一般情况下，对于端口相同而IP地址不同的多个连接，nginx服务器将只使用一个监听命令，并使用bind()处理端口相同的所有链接。
+* ssl，标识符，设置会话连接使用ssl模式进行，此标识符与nginx服务器提供的HTTPS
 
-12213
+### server_name 
 
-aaaa
+#### 基于名称的虚拟主机
 
+```shell
+server_name name ,,,;
+```
 
+name可以是一个名称，也可以由多个名称并列，用空格隔开。第一个名称作为虚拟主机的主要名称
+
+```shell
+server_name myserver.com www.myserver.com ;
+```
+
+server_name支持通配符`'*'`以及正则表达式，`'~'`:
+
+```shell
+# 通配符
+server_name *.myserver.com www.myserver.*;
+# 正则表达式
+server_name ~^www\d+\.myserver\.com$;
+```
+
+nginx0.7.40开始，正则表达式支持字符串捕获功能，既可以将正则表达式匹配成功的名称中的一部分字符串拾取出来，作为变量使用。对内容嵌套小括号，内容从左到右依次存放在变量$1，$2，$3，变量有效区域不超过本server块（局部变量）
+
+```shell
+server_name ~^www\.(.+)\.com$;
+```
+
+匹配主机名`www.myserver.com`，则$1为myserver
+
+##### server_name匹配优先级
+
+当一个主机名满足多条server_name匹配规则时，按下列顺序进行匹配
+
+1. 精确匹配
+1. 通配符在开始位置
+1. 通配符在结束位置
+1. 正则表达式匹配
+
+#### 基于IP的虚拟主机
+
+针对多IP的情况，设置nginx监听多个IP
+
+```shell
+http
+{
+server
+{
+   listen 80；
+    server_name 192.168.1.31; 
+}
+server
+{
+    listen 80；
+    server_name 192.168.1.32;
+}
+}
+```
+
+### location 
+
+```shell
+location [ = | ~ | ~* | ^~ ]  URI { . . . }
+```
+
+URI：待匹配的请求字符串，如/myserver.php，或者/.php$
+
+标准URI：不包含正则表达式的URI
+
+正则URI：包含正则表达式的URI
+
+* **=**，用于标准URI，精确匹配
+* **^~**，用于标准URI前，要求nginx服务器找到表示URI和请求字符串**匹配度最高**的location后，立即使用此location处理请求，而不再使用location块中的正则URI和请求字符串做匹配
+* **~**，表示URI包含正则表达式，并且**区分大小写**
+* **~***，表示URI包含正则表达式，并且**不区分大小写**
+
+### root
+
+```shell
+root path;
+```
+
+path为nginx服务器接收到请求以后查找资源的根目录路径。path变量中可以包含nginx服务器预设的大多数变量，只有$document_root和$realpath_root
+
+### alias
+
+alias可以改变location接收到的URI请求
+
+```shell
+location ~ ^/data/(.+\.(htm|html))$
+{
+    alias  /locationtest1/other/$1
+}
+```
+
+### index
+
+```shell
+location ~/data/(.+)/web/ 
+{
+    index index.$1.html index.myl.html index.html;
+}
+```
+
+当接收到`/data/locationtest/web/`，匹配成功，$1=locationtest，依次在/data/locationtest/web/查找index.locationtest.html，index.myl.html，index.html
+
+### error_page
+
+用户尝试查看网页时遇到问题，服务器会将HTTP错误从服务端发送到web客户端。
+
+```shell
+error_page 404 /404.html;
+error_page 403 /403.html;
+location /404.html
+{
+    root /myserver/errorpages;
+}
+```
+
+### 基于IP的访问权限
+
+#### allow 允许
+
+支持IPv4，IPv6
+
+```shell
+allow address | CIDR | all ;
+```
+
+* address，允许访问的客户端的IP，不支持同事设置多个，多个IP需要设置时需要重复使用allow命令
+* CIDR(无类域间路由，即可变长掩码)，允许访问的客户端CIDR地址，例如202.80.18.23/25
+* ALL，荀彧所有客户端访问
+
+#### deny 拒绝
+
+```shell
+deny address | CIDR | all ; 
+```
+
+用法同上
+
+#### 匹配规则
+
+```shell
+location / {
+    deny 192.168.1.1;
+    allow 192.168.1.0/24;
+    deny all;
+}
+```
+
+匹配自上而下，匹配到规则即不再继续匹配
+
+例如：
+
+* 192.168.1.1自上而下匹配第一条规则，deny，不再继续匹配
+* 192.168.1.2自上而下匹配第二条规则，allow，不再继续匹配
+
+### 基于密码的访问权限
+
+NGINX支持基于HTTP basic authentication协议的认证。该功能由HTTP标准模块ngx_http_auth_basic_module支持
+
+```shell
+auth_basic strng | off ;
+```
+
+* string：开启认证功能，并配置验证时的只是信息
+* off：关闭认证功能
+
+auth_basic_user_file指令，用于设置包含用户名和密码信息的文件路径
+
+```shell
+auth_basic_user_file file;
+```
+
+* file为密码文件的绝对路径
+
+```shell
+cat /etc/nginx/password
+name1:password1
+name2:password2
+```
+
+加密密码可以使用crypt()函数进行密码加密的屙屎，在Linux平台可以使用htpasswd命令生成，运行后输入密码即可
+
+```shell
+htpasswd -c -d /nginx/conf/pass_file username
+```
 
