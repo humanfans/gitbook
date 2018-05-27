@@ -196,6 +196,8 @@ info: initialization is finished
 
 ## 部署webhook并与github联动
 
+### 安装webhookit
+
 安装webhookit，并生成默认配置文件，请注意自己的Python环境，调用相应的pip
 
 ```shell
@@ -251,5 +253,11 @@ gitbook install
 gitbook build
 ```
 
+### 启动webhookit
 
+```shell
+webhookit -c /opt/webhook/webhook_for_github.conf -p port
+```
+
+启动完成后即可访问localhost:port查看webhook的信息及推送的URL，在github填入URL并配置type为json即可
 
