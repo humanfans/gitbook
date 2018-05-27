@@ -259,5 +259,16 @@ gitbook build
 webhookit -c /opt/webhook/webhook_for_github.conf -p port
 ```
 
-启动完成后即可访问localhost:port查看webhook的信息及推送的URL，在github填入URL并配置type为json即可
+启动完成后即可访问localhost:port查看webhook的信息及推送的URL，在github填入URL并配置type为json即可。
+
+## 配置github
+
+项目——setting——webhook——ADD webhook
+
+* payload URL：填写webhookURL
+* Content type ：application/json
+
+触发条件可选，我这里选择的是`Just the push event.` 
+
+
 
