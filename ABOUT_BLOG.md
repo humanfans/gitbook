@@ -196,5 +196,60 @@ info: initialization is finished
 
 ## 部署webhook并与github联动
 
+安装webhookit，并生成默认配置文件，请注意自己的Python环境，调用相应的pip
+
+```shell
+pip install webhookit
+webhookit_config > /opt/webhook/webhook_for_github.conf 
+```
+
+修改配置文件
+
+* ​	如果执行脚本在webhook本机，只需要修改如下两个参数
+  * `repo_name/branch_name`修改成自己的项目名称和分支名
+  * `SCRIPT`写入自己要执行的脚本
+
+```shell
+[huangwj@instance-1 ~]$ cat /opt/webhook/webhook_for_github.conf 
+# -*- coding: utf-8 -*-
+'''
+Created on May-25-18 19:10:16
+
+@author: hustcc/webhookit
+'''
+
+
+# This means:
+# When get a webhook request from `repo_name` on branch `branch_name`,
+# will exec SCRIPT on servers config in the array.
+WEBHOOKIT_CONFIGURE = {
+    # a web hook request can trigger multiple servers.
+    'gitbook/master': [{
+        # if exec shell on local server, keep empty.
+        'HOST': '',  # will exec shell on which server.
+        'PORT': '',  # ssh port, default is 22.
+        'USER': '',  # linux user name
+        'PWD': '',  # user password or private key.
+
+        # The webhook shell script path.
+        'SCRIPT': '/opt/huangwj/scripts/gitbook_update.sh > /opt/huangwj/scripts/gitbook_update.log'
+    }]
+}
+```
+
+我的脚本
+
+```shell
+[huangwj@instance-1 scripts]$ cat gitbook_update.sh 
+#!/bin/bash
+source /etc/profile
+source /home/huangwj/.bash_profile
+date
+cd /opt/huangwj/gitbook
+git pull
+gitbook install
+gitbook build
+```
+
 
 
