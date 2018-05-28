@@ -19,7 +19,8 @@
         "splitter@^0.0.8",
         "tbfed-pagefooter@^0.0.1",
         "expandable-chapters-small@^0.1.7",
-        "anchor-navigation-ex@0.1.8"
+        "anchor-navigation-ex@0.1.8",
+		"ga"
     ],
 
     "pluginsConfig": {
@@ -48,7 +49,10 @@
             "tocLevel1Icon": "fa fa-hand-o-right",
             "tocLevel2Icon": "fa fa-hand-o-right",
             "tocLevel3Icon": "fa fa-hand-o-right"
-        }
+        },
+		"ga": {
+		 "token": "UA-119942107-1"
+		}
 
 
     }
