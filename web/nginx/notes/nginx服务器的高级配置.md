@@ -66,5 +66,54 @@ net.ipv4.tcp_synack_retries = 1
 net.ipv4.tcp_syn_retries = 1
 ```
 
+## 针对CPU的配置优化
 
+### worker proceses 
+
+用来设置nginx服务的进程数，一般设置为CPU的倍数，我这里配置worker process auto，一个4个CPU线程，会起4个nginx进程
+
+```shell
+[root@test nginx]# ps -ef |  grep nginx |  grep -v grep 
+root      1425     1  0 May22 ?        00:00:00 nginx: master process nginx
+elk       3495  1425  0 11:33 ?        00:00:00 nginx: worker process
+elk       3496  1425  0 11:33 ?        00:00:00 nginx: worker process
+elk       3497  1425  0 11:33 ?        00:00:00 nginx: worker process
+elk       3498  1425  0 11:33 ?        00:00:00 nginx: worker process
+[root@test nginx]# cat /proc/cpuinfo  |  grep processor 
+processor       : 0
+processor       : 1
+processor       : 2
+processor       : 3
+```
+
+
+
+### worker_cpu_affinity 
+
+指定每一个线程的启动在哪个CPU核心，用二进制的每一位表示每个CPU核心，如果线程使用某个CPU核心，则对应核心的位置会置为1，不使用则置为0
+
+比如四CPU，起了4个nginx进程，那么需要4位而至今来表示CPU（4321，自右向左）
+
+* 线程1使用第1个CPU核心：0001
+* 线程2使用第2个CPU核心：0010
+* 线程3使用第3个CPU核心：0100
+* 线程4使用第4个CPU核心：1000
+
+如果线程1使用4个核心，那么表示为1111
+
+```shell
+worker_cpu_affinity 0001 0010 0100 1000;
+```
+
+如果8核心，则需要8位二进制表示CPU 00000001 00000010 10000000
+
+## 与网络连接相关的配置
+
+### 基础：长连接和短连接
+
+http建立tcp连接
+
+### keepalive_timeout
+
+设置nginx服务器与客户端保持连接的超时时间
 
