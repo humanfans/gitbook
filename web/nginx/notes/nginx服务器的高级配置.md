@@ -113,7 +113,155 @@ worker_cpu_affinity 0001 0010 0100 1000;
 
 http建立tcp连接
 
+短连接：每一个请求都需要建立一次连接
+
+长链接：一段时间内同一客户端只需要监理一次连接
+
 ### keepalive_timeout
 
-设置nginx服务器与客户端保持连接的超时时间
+设置nginx服务器与客户端保持连接的超时时间，可以设置两个时间：第一个时间字段为服务器断开连接的时间，第二个时间字段可选，为客户端主动断开连接的时间，keepalive消息头会发送给客户端）
+
+```shell
+keepalive_timeout 60 50;
+```
+
+上面的表示60S后服务器与客户端断开连接，客户端在50S后会主动断开与服务器的连接（不会等待服务器的60S）
+
+### send_timeout
+
+建立连接后，会话活动中服务器等待客户端的响应时间。
+
+```shell
+send_timeout 10s;
+```
+
+代表在连接建立后，***如果10秒内nginx服务器没有收到客户端新的响应***，服务器会自动关闭连接
+
+### client_header_buffer_size
+
+设置nginx服务器允许的客户端请求头的缓冲区大小，默认1KB，可以根据分系统分页大小来设置。
+
+获取系统分页大小：
+
+```shell
+[huangwj@instance-1 ~]$ getconf PAGESIZE
+4096
+```
+
+nginx服务器返回400错误时大概率是由于请求头过大造成，根据系统分页大小，可以设置client_header_buffer_size为4096
+
+```shell
+client_header_buffer_size 4k;
+```
+
+### multi_accept
+
+配置nginx服务器是否可以尽可能多的接收客户端的网络连接请求，默认off。
+
+## 与事件驱动模型相关的配置
+
+### use
+
+指定nginx服务器使用的事件驱动模型
+
+### work_connections
+
+设置nginx服务每个工作进程允许同时连接客户端的最大数量
+
+```shell
+worker_connections 65535；
+```
+
+worker_connections受限于内核参数open_file_resource_limit（进程可以打开文件句柄的数量）
+
+查看file-max
+
+```shell
+[huangwj@instance-1 ~]$ cat /proc/sys/fs/file-max            
+2000000
+```
+
+修改file-max
+
+```shell
+[huangwj@instance-1 ~]$ cat /etc/sysctl.conf 
+fs.file-max = 2000000
+
+[huangwj@instance-1 ~]$ sudo sysctl -p 
+fs.file-max = 2000000
+```
+
+### worker_rlimit_sigpending
+
+设置linux平台时间信号队列的长度上限
+
+主要影响rtsig事件驱动模型可以保存的最大信号数。nginx每个worker process有自己的时间信号队列用于暂存客户端请求发生信号，超过长度上限后悔自动专用poll模型处理为处理的客户端请求，根据实际的客户端并发请求数量和服务器运行环境的处理能力自行设定：
+
+```shell
+worker_rlimit_sigpending 1024;
+```
+
+### devpoll_changes和devpoll_enents
+
+用于设置在/dev/poll事件驱动模式下nginx服务器可以与内核之间传递事件的数量
+
+```shell
+# 传递给内核的事件数量
+devpoll_changes number
+# 从内核获取的事件数量
+devpoll_events
+```
+
+### kqueue_changes和kqueue_events
+
+用于设置在kqueue事件驱动模式下nginx服务器可以与内核之间传递事件的数量
+
+```shell
+# 传递给内核的事件数量
+kqueue_changes number
+# 从内核获取的事件数量
+kqueue_events number
+```
+
+### epoll_events
+
+设置在epoll事件驱动模式下nginx服务器可以与内核之间传递事件的数量
+
+```shell
+epoll_changes number
+```
+
+### RTSIG_SIGNO
+
+用于设置rtsig模式使用得当两个信号中的第一个，第二个信号实在第一个信号的编号上+1
+
+```shell
+rtsig_signo signo
+```
+
+默认的第一个信号设置为SIGRTMIN+10
+
+查看系统支持的SIGRTMIN
+
+```shell
+[huangwj@instance-1 ~]$ kill -l  | grep SIGRTMIN
+31) SIGSYS      34) SIGRTMIN    35) SIGRTMIN+1  36) SIGRTMIN+2  37) SIGRTMIN+3
+38) SIGRTMIN+4  39) SIGRTMIN+5  40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8
+43) SIGRTMIN+9  44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12 47) SIGRTMIN+13
+48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14 51) SIGRTMAX-13 52) SIGRTMAX-12
+```
+
+### rtsig_overflow_events 、rrtsig_overflow_test、rtsig_overflow_threshold
+
+控制rtsig模式中信号队列溢出时nginx服务器的处理方式
+
+rtsig_overflow_events指令指定队列一出事使用poll库处理的事件数，默认16
+
+rtsig_overflow_test指定poll库处理完第几间时间后将清空rtsig模型是用的信号队列，默认32
+
+rtsig_overfolw_threshold指定rtsig模式使用的信号队列中的事件超过多少事就需要清空队列
+
+
+
+
 

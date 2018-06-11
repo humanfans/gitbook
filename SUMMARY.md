@@ -26,8 +26,14 @@
         * [nginx](web/nginx/nginx.md)
             * [nginx学习笔记](web/nginx/notes/notes.md)
                 * [nginx基础](web/nginx/notes/nginx基础.md)
+
                 * [nginx服务器架构初探](web/nginx/notes/nginx服务器架构初探.md)
+
                 * [nginx服务器的高级配置](web/nginx/notes/nginx服务器的高级配置.md)
+
+                * [gzip压缩](web/nginx/notes/gzip压缩.md)
+
+                  
     * [常用工具](tools/tools.md)
         * [gitlab](tools/gitlab/gitlab.md)
         * [ansible](tools/ansible/ansible.md)
