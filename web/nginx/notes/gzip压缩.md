@@ -138,5 +138,76 @@ add_header Vary Accept-Encoding gzip ;
 
 ## ngx_http_gzip_static_module模块处理的指令
 
+可选模块，使用前需要--with-http_gunzip_module
+
 ngx_http_zip_static_module模块主要负责搜索和发送经过gzip压缩过的数据，这些数据以”GZ“作为后缀名存储在服务器。如果请求的数据被压缩过，且客户端支持gzip，直接返回压缩后数据
+
+* ngx_http_gzip_static_module，使用静态压缩，在HTTP响应头部包含Content-Length指明报文长度，服务器可确定相应数据长度
+* ngx_http_gzip_module，使用chunked编码的动态压缩，主要适用于服务器无法确定响应数据长度的情况，比如大文件下载，需要实时生成数据长度
+
+### 相关指令
+
+* `gzip_static on | off | always;`
+  * on，开启模块功能
+  * off，关闭模块功能
+  * always，一直发送gzip预压缩文件，不检查客户端是否支持gzip
+* `gzip_proxied expired | no-cache | no-store | private auth ;`
+
+**注意：该模块下的gzip_vary，只给未压缩的内容添加'Vary:Accept-Encoding'，如果要给所有响应头添加头域，可以通过nginx配置add_header指令实现**
+
+## ngx_http_gunzip_module模块处理的2个指令
+
+可选模块，使用前需要--with-http_gunzip_module
+
+默认关闭，开启式如果客户端不支持gzip，则返回解压后的数据，如果支持gzip，则仍然返回压缩数据
+
+**gunzip_static实际测试中没有该指令，官方文档也查不到！！！！**
+
+http://nginx.org/en/docs/http/ngx_http_gunzip_module.html
+
+### gunzip
+
+### gunzip_static
+
+```shell
+gunzip_static on | off ;
+```
+
+### gunzip_buffer
+
+类似ngx_http_gzip_module中的gzip_buffers
+
+```shell
+gunzip_buffers number size ; 
+```
+
+默认number*size=128
+
+## gzip配置实例
+
+```shell
+gzip  on ;	#开启gzip功能
+gzip_min_length ;	#开启gzip的文件大小
+gzip_buffers 4 16K；	#申请4个缓存空间，每个16K
+gzip_comp_level 2；	#压缩级别2
+gzip_types text/plain applicatio/json text/css application/xml application/javascript;
+gzip_vary on;
+gunzip_static on ; 
+```
+
+建议配置在HTTP块，全局开启压缩，不压缩的server可以单独gzip off
+
+```shell
+server {
+    listen 8082 ; 
+    server_name 192.168.1.1 ;
+    gzip off ;
+}
+```
+
+## nginx与其他web服务器协作gzip
+
+nginx作为反向代理时建议关闭后端服务器gzip，开启nginx gzip，否则可能出现页面异常
+
+
 

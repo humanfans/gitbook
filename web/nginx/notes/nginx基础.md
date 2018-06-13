@@ -586,7 +586,7 @@ name1:password1
 name2:password2
 ```
 
-加密密码可以使用crypt()函数进行密码加密的屙屎，在Linux平台可以使用htpasswd命令生成，运行后输入密码即可
+加密密码可以使用crypt()函数进行密码加密的方式，在Linux平台可以使用htpasswd命令生成，运行后输入密码即可
 
 ```shell
 htpasswd -c -d /nginx/conf/pass_file username

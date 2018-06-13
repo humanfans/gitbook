@@ -29,6 +29,7 @@
                 * [nginx服务器架构初探](web/nginx/notes/nginx服务器架构初探.md)
                 * [nginx服务器的高级配置](web/nginx/notes/nginx服务器的高级配置.md)
                 * [gzip压缩](web/nginx/notes/gzip压缩.md)
+                * [Rewrite](web/nginx/notes/Rewrite.md)
 
 -----
 * [瞎扯淡](chedan/chedan.md)
