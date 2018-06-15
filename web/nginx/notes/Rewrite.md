@@ -67,7 +67,7 @@ connections为nginx服务器每个worker process允许该服务器组保持的�
 
 配置nginx服务器使用负载均衡策，选择最少连接负载的服务器分配连接，如果有多台符合的服务器，则采用加权轮询选择这几台服务器
 
-## Rewrite
+## Rewrite指令
 
 rewrite依赖PCRE（peal compatible regular expressions）
 
@@ -92,4 +92,168 @@ rewrite依赖PCRE（peal compatible regular expressions）
 ```shell
 if （condition） {...}
 ```
+
+* 变量名条件，不为空为true，空或0false
+
+  ```shell
+  if （$slow） {
+      ... #nginx配置
+  }
+  ```
+
+* 变量判断
+
+  ```shell
+  if ( $request_method = POST ){
+      return 405;
+  }
+  ```
+
+* 正则判断，匹配则true
+
+  ```shell
+  if ( $http_user_agent ~ MSIE ) {
+      ...
+  }
+  IF ( $HTTP_COOKIE ~* "ID=([^;]+)(?:;|$)"){
+      匹配正则表达式，成功则true
+      
+  }
+  ```
+
+* 判断文件是否存在 -f 是否不存在  !-f
+
+  ```shell
+  if ( -f $request_filename ) {
+      ...
+  }
+  if ( !-f $request_filename ) {
+      ...
+  }
+  ```
+
+* 判断目录是否存在 -d 是否不存在 !-d
+
+* 判断目录或者文件是否存在 -e 
+
+* 判断请求的事件是否可执行 -x
+
+**注意：字符串不需要加引号**
+
+### break 
+
+跳出当前作用域
+
+```shell
+location / {
+    if ($slow){
+        set #id $1
+        break;
+        limit_rate 10k;	# break跳出当前作用域，不执行
+    }
+    if (condition A ){	# break上级其他作用域，顺序执行
+        ...
+    }    
+        }
+```
+
+### return 
+
+用于完成对请求的处理，直接返回响应状态代码，return后的配置均无效
+
+```shell
+return [text]
+return code URL; # code为301,302,303,307
+return URL;	# code为302,307
+```
+
+### rewrite
+
+```shell
+rewrite regex replacement [flag];
+```
+
+* rewrite接收到的URI不包含host，也不包含请求指令`?arg1=value1`
+* replacement为替换URI中被截取内容的字符串
+* flag
+  * last，一条URI匹配规则后，被重新为一条新的URI，重新再所有location中进行匹配，提供了URI转入其他location的机会
+  * break，一条URI匹配后，重写为新的URI，在本location中继续进行处理，不会转入其他的location
+  * redirect，将重写后的URI返回给客户端，状态码302，临时重定向
+  * permanent，重写后的URI返回给客户端，状态码301，永久重定向
+
+### rewrite_log
+
+```shell
+rewrite_log on | off 
+```
+
+默认off，配置为on后，URL重写的日志会以notice级别输出到error_log里
+
+### set
+
+设置一个新的变量
+
+```shell
+set variable value
+```
+
+* variable为变量名，要用符号$标记，且不能与nginx服务器预设的全局变量同名
+* value，变量的值
+
+### uninitialized_variable_warn
+
+用于配置使用未初始化的变量时，是偶记录警告日志：
+
+```shell
+uninitialized_variable_warn on | off
+```
+
+默认on
+
+## rewrite的使用
+
+### 域名跳转
+
+```shell
+sever {
+    listen 80;
+    server_name jump.myweb.name;
+    rewrite ^/ http://www/myweb.info/;	# 域名跳转，针对jump.myweb.name的所有请求跳转到www.myweb.info
+}
+```
+
+```shell
+server{
+    listen 80；
+    server_name jump.mywebname jump.myweb.info；
+    if ( $host ~ myweb\.info )	# 如果主机名正则匹配myweb.info
+    {
+        rewrite ^(.*) http://jump.myweb.name$1 permanent；	# 重写URI到http://jump.myweb.name/URL
+    }
+}
+```
+
+### 域名镜像？？
+
+没懂和普通rewrite的区别，根据资源做分流？
+
+### 独立域名
+
+将一个站点根据资源分割为多个域名
+
+```shell
+server {
+    listen 80;
+	server_name bbs.myweb.name;
+	rewrite ^(.*) http://www.myweb.name/bbs$1 last;		# 将bbs模块重写为域名bbs.myweb.name
+}
+server {
+    listen 80;
+    server_name home.myweb.name;
+    rewrite ^(.*) http://www.myweb.name/home$1 last;	# 将home模块重写为域名home.myweb.name
+}
+
+```
+
+
 
