@@ -252,6 +252,66 @@ server {
     server_name home.myweb.name;
     rewrite ^(.*) http://www.myweb.name/home$1 last;	# 将home模块重写为域名home.myweb.name
 }
+```
+
+### 目录自动添加'/'
+
+配置index参数后
+
+http://www.myweb.name/bbs/ 带/的可以直接查找index文件
+
+http://ww.myweb.name/bbs 不带/不能被识别为目录，不能自动寻找index
+
+```shell
+location ^~ /bbs	# 依据匹配程度标准匹配
+{
+    if ( -d $request_filename ) {	# 检测请求的目录是否存在
+        rewrite ^/(.*)([^/])$ http://$host/$1$2/ permanent;	# 匹配结尾没有/的目录，在结尾加上/
+    }
+}
+```
+
+### 目录合并
+
+目录结构复杂不利于搜索，可以通过rewrite简化路径，比如root/server/12/34/56/78/9.html
+
+```shell
+server {
+    listen 80;
+    server_name www.myweb.name;
+    location ^~ /server {
+        rewrite ^/server-(\d+)-(\d+)-(\d+)-(\d+)\.html$ /server/$1/$2/$3/$4/html last ;
+    }
+}
+```
+
+### 防盗链
+
+请求网页时，A网页中存在B站点的资源时，就存在A对B的盗链行为，B站点为了防止这种行为，就需要检测http协议中header中referer头域检测访问目标资源的源地址，当检测到referer头域中的值不是自己的站点的URL，就阻止访问
+
+nginx中**valid_referers**用来获取referer头域中的值，并将结果赋值给全局变量`$invalid_referer`,如果referer头域中没有符合valid_referers指令配置的值，`$invalid_referer`会被赋值为1
+
+```shell
+valid_referers none | blocked | server_names | string ...;
+```
+
+* none，referer头域不存在
+* blocked，检测referer头域的值被伪装或者被删除的情况
+* server_names，设置一个或多个URL，检测referer头域的值是否是这些URL中的某个
+
+```shell
+server {
+    listen 80;
+    server_name www.myweb.name;
+   	 location ~* ^.+(gif|jpg|png|swf|flv|rar|zip)$ {
+    valid_referers none blocked server_names *.myweb.name;
+    if ($invalid_referer){
+        rewrite ^/ htttp://www.myweb.com/images/forbidden.png;
+    }
+    )
+}
+
+
 
 ```
 
