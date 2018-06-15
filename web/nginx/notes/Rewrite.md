@@ -317,3 +317,4 @@ server {
 
 
 
+![](https://huangwj.app/image/python_zabbix_alertmessage.jpg)
