@@ -30,6 +30,8 @@
                 * [nginx服务器的高级配置](web/nginx/notes/nginx服务器的高级配置.md)
                 * [gzip压缩](web/nginx/notes/gzip压缩.md)
                 * [Rewrite](web/nginx/notes/Rewrite.md)
+                * [proxy](web/nginx/notes/proxy.md)
+                * [nginx缓存](web/nginx/notes/nginx缓存.md)
 
 -----
 * [瞎扯淡](chedan/chedan.md)
