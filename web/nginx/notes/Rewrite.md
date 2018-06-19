@@ -1,5 +1,7 @@
 # Rewrite
 
+[TOC]
+
 ## Upstream命令-负载
 
 ### upstream
@@ -310,11 +312,7 @@ server {
     }
     )
 }
-
-
-
 ```
 
 
 
-![](https://huangwj.app/image/python_zabbix_alertmessage.jpg)
