@@ -320,3 +320,25 @@ level N：设置在path下第几级hash目录下存放临时文件 1 2 3 为嵌�
 proxy_temp_path /nginx/proxy_web/spool/proxy_temp  1 2 ; 
 ```
 
+配置为level2 二级目录，则目录如下
+
+```shell
+/nginx/proxy_web/spool/proxy_temp/1/10/10101010101
+```
+
+### proxy_max_temp_file_size 
+
+用于限制所有临时文件的总大小
+
+```nginx
+proxy_temp_file_write_size size；
+```
+
+### proxy_temp_file_write_size
+
+用于配置同时写入临时文件的数据量的总大小
+
+```nginx
+proxy_temp_file_write_size size ;
+```
+
