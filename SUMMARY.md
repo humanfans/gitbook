@@ -32,8 +32,8 @@
                 * [Rewrite](web/nginx/notes/Rewrite.md)
                 * [proxy](web/nginx/notes/proxy.md)
                 * [nginx缓存](web/nginx/notes/nginx缓存.md)
-
-                
+    * [虚拟化](vm/vm.md)
+        * [docker](vm/docker/docker.md)
 
 -----
 * [瞎扯淡](chedan/chedan.md)
