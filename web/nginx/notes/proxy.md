@@ -342,3 +342,50 @@ proxy_temp_file_write_size size；
 proxy_temp_file_write_size size ;
 ```
 
+## proxy_cache的常用配置
+
+### buffer与cache的区别
+
+* buffer，缓冲，主要用于传输速率不同步或者优先级不相同的设备之间传递数据，一般通过对一方数据进行临时存放，再同一发送给另一方
+* cache，缓存，将已有的数据在内存中建立缓存数据，提高数据的访问效率，对于过期不用的缓存可以随时销毁，但不会销毁硬盘上的数据
+
+### proxy_buffer与proxy_cache
+
+* proxy_buffer实现后端服务器与客户端的异步传输
+* proxy_cache实现nginx服务器对客户端的快速响应；将后端服务器回复到nginx的数据缓存在nginx本地，当客户端请求想用数据时，nginx服务器可以直接从本地检索数据返回给用户，减少与后端服务器交互的时间，提高响应速度
+
+proxy_cache需要在proxy_buffer开启的情况下才能发挥作用
+
+### proxy_cache常用命令
+
+#### proxy_cache
+
+用于配置一块公用的内存区域，用于存放缓存的索引数据
+
+```nginx
+proxy_cache zone | off ; 
+```
+
+* zone，设置用于存放缓存索引的内存区域的名称
+* off，关闭proxy_cache功能
+
+proxy cache会检测候选服务器响应数据的HTTP头中的cache-control，expires。当cache-control值为no-cache，no-store，private，max-age=0时，expires头域包含一个过期时间时，数据不会被nginx服务器缓存，这是为了避免私有数据被其他客户端得到
+
+#### proxy_cache_bypass
+
+当写在proxy_cache_bypass中的任意一个变量不为空且不为0，响应数据不从缓存中获取
+
+```nginx
+proxy_cache_bypass $cookie_nocache $arg_nocache $arg_comment $http_pragma $http_authorization ;
+```
+
+#### proxy_cache_key
+
+用于设置nginx服务器在内存中为缓存数据建立索引时的关键字，通常配置如下字段
+
+```nginx
+proxy_cache_key "$scheme$proxy_host$uri$is_args$args"
+```
+
+#### proxy_cache_lock
+
