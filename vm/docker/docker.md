@@ -799,3 +799,158 @@ ubuntu:17.10 \
 bash
 ```
 
+## docker网络
+
+### 端口映射
+
+#### 映射主机所有地址的随机端口
+
+docker -P
+
+```shell
+➜  .ssh docker run -d  -P  --name nginx_P nginx 
+7f4a2442b2c52656d6e4709142f81edefaa075896d036165880f169f4dfbcd63
+➜  .ssh docker container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                   NAMES
+7f4a2442b2c5        nginx               "nginx -g 'daemon of…"   7 seconds ago       Up 5 seconds        0.0.0.0:32768->80/tcp   nginx_P
+
+```
+
+#### 映射指定宿主机IP指定端口
+
+```shell
+➜  .ssh docker run -d -p 127.0.0.1:80:80 --name nginx80 nginx
+
+7f2277c62fa1aae037555555cb38a75f77bc9f93d2ed82a7db70d115a59ed902
+➜  .ssh docker container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                  NAMES
+7f2277c62fa1        nginx               "nginx -g 'daemon of…"   7 seconds ago       Up 4 seconds        127.0.0.1:80->80/tcp   nginx80
+```
+
+#### 映射宿主机所有IP的指定端口
+
+```shell
+➜  .ssh docker run -d -p 81:80 --name nginx81 nginx
+693be8dfb0eca93c5193a419250e116d2188e6c38c54cd0243baba2983c4cf5e
+➜  .ssh docker container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                     NAMES
+693be8dfb0ec        nginx               "nginx -g 'daemon of…"   40 seconds ago       Up 38 seconds       0.0.0.0:81->80/tcp        nginx81
+```
+
+#### 映射宿主机指定IP的随机端口
+
+```shell
+➜  .ssh docker run -d -p 127.0.0.1::80 --name nginx_random nginx 
+5655972dbb2ab744b15f65e294164685f37035b71a4acf388c077a54c54f39bf
+➜  .ssh docker container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                     NAMES
+5655972dbb2a        nginx               "nginx -g 'daemon of…"   5 seconds ago        Up 3 seconds        127.0.0.1:32768->80/tcp   nginx_random
+```
+
+#### 映射多个端口
+
+```shell
+➜  .ssh docker run -d -p 22:220  -p 80:80  --name nginx_22_80  nginx
+e7223e2e3d2ac784252048752f29884b501f39453ac73e6ae816785393e519ca
+➜  .ssh docker container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                     NAMES
+e7223e2e3d2a        nginx               "nginx -g 'daemon of…"   5 seconds ago       Up 2 seconds        0.0.0.0:80->80/tcp, 0.0.0.0:22->220/tcp   nginx_22_80
+```
+
+### 容器互联——bridge
+
+#### 创建网络
+
+```shell
+➜  .ssh docker network create -d bridge my-net                      
+```
+
+#### 容器加入网络
+
+```shell
+➜  .ssh docker run -it --name busybox1 --network my-net  -d  ubuntu 
+➜  .ssh docker run -it --name busybox2 --network my-net  -d  ubuntu 
+```
+
+```shell
+root@02e2c31b0908:/# ping busybox1
+PING busybox1 (172.18.0.2): 56 data bytes
+64 bytes from 172.18.0.2: icmp_seq=0 ttl=64 time=0.047 ms
+64 bytes from 172.18.0.2: icmp_seq=1 ttl=64 time=0.047 ms
+^C--- busybox1 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+round-trip min/avg/max/stddev = 0.047/0.047/0.047/0.000 ms
+root@02e2c31b0908:/# ping busybox2
+PING busybox2 (172.18.0.3): 56 data bytes
+64 bytes from 172.18.0.3: icmp_seq=0 ttl=64 time=0.077 ms
+64 bytes from 172.18.0.3: icmp_seq=1 ttl=64 time=0.100 ms
+64 bytes from 172.18.0.3: icmp_seq=2 ttl=64 time=0.048 ms
+64 bytes from 172.18.0.3: icmp_seq=3 ttl=64 time=0.049 ms
+^C--- busybox2 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max/stddev = 0.048/0.068/0.100/0.000 ms
+
+```
+
+#### DNS
+
+查看container的挂载
+
+```shell
+root@02e2c31b0908:/# mount |  grep -E 'hostname|resolv.conf|hosts'
+/dev/sda4 on /etc/resolv.conf type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+/dev/sda4 on /etc/hostname type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+/dev/sda4 on /etc/hosts type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+```
+
+wyny@x270 # cat /etc/docker/daemon.json 
+{"registry-mirrors": ["http://0340e178.m.daocloud.io"]}container依赖于宿主机的DNS解析
+
+```shell
+wyny@x270 # cat /etc/docker/daemon.json 
+{
+"dns" : [
+"114.114.114.114",
+"8.8.8.8"
+]
+}
+```
+
+#### HOSTNAME
+
+```shell
+wyny@x270# docker run -d -p 80:80  --hostname=host1  --dns=114.114.114.114  --name host1  nginx 
+4902ba5bcc869d20f1d79e8cc9ccac4866d19bebbe087f0f86e25a7233705427
+wyny@x270# docker container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                NAMES
+4902ba5bcc86        nginx               "nginx -g 'daemon of…"   8 seconds ago       Up 5 seconds        0.0.0.0:80->80/tcp   host1
+4b17dbab82df        ubuntu              "/bin/bash"              3 hours ago         Up 3 hours                               busybox2
+02e2c31b0908        ubuntu              "/bin/bash"              3 hours ago         Up 3 hours                               busybox1
+wyny@x270# docker exec -it host1 bash 
+root@host1:/# ls
+bin   dev  home  lib64	mnt  proc  run	 srv  tmp  var
+boot  etc  lib	 media	opt  root  sbin  sys  usr
+```
+
+## 高级网络
+
+#### 网络配置常用参数
+
+#### 容器访问控制
+
+##### 容器访问外部网络
+
+container内部开启转发
+
+```shell
+sysctl -w net.ipv4.ip_forward=1
+```
+
+或启动docker时添加参数`--ip-forward=true`
+
+
+
+## docker compose
+
+
+
