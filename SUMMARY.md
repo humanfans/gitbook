@@ -34,6 +34,7 @@
                 * [nginx缓存](web/nginx/notes/nginx缓存.md)
     * [虚拟化](vm/vm.md)
         * [docker](vm/docker/docker.md)
+        * [kubernetes](vm/k8s/k8s.md)
 
 -----
 * [瞎扯淡](chedan/chedan.md)
